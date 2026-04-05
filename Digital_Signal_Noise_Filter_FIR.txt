@@ -1,0 +1,40 @@
+// Digital Signal Noise Filter using FIR Filter
+
+const int inputPin = A0;
+const int outputPin = 9;
+
+// FIR filter coefficients (simple low-pass)
+#define N 5
+float coeff[N] = {0.2, 0.2, 0.2, 0.2, 0.2};
+float buffer[N] = {0};
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(outputPin, OUTPUT);
+}
+
+void loop() {
+  // Shift buffer
+  for (int i = N-1; i > 0; i--) {
+    buffer[i] = buffer[i-1];
+  }
+
+  // Read new sample
+  buffer[0] = analogRead(inputPin);
+
+  // Apply FIR filter
+  float filtered = 0;
+  for (int i = 0; i < N; i++) {
+    filtered += coeff[i] * buffer[i];
+  }
+
+  int pwmOut = map(filtered, 0, 1023, 0, 255);
+  analogWrite(outputPin, pwmOut);
+
+  Serial.print("Raw: ");
+  Serial.print(buffer[0]);
+  Serial.print(" Filtered: ");
+  Serial.println(filtered);
+
+  delay(200);
+}
